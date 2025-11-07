@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Registration System</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🎪 Event Registration System</h1>
+            <p>Manage events, registrations, and QR code verification</p>
+        </header>
+
+        <!-- Toast Container -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Main Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="auth">🔐 Authentication</button>
+            <button class="nav-tab" data-tab="events">📅 Events</button>
+            <button class="nav-tab" data-tab="my-registrations">🎫 My Registrations</button>
+            <button class="nav-tab" data-tab="admin">⚙️ Admin Panel</button>
+        </div>
+
+        <!-- AUTHENTICATION TAB -->
+        <div id="auth" class="tab-content">
+            <div class="card">
+                <h2>Welcome to Event Registration</h2>
+                <p>Please login or register to access the system.</p>
+                
+                <!-- Auth Sub-tabs -->
+                <div class="nav-tabs" style="margin: 2rem 0 1rem 0; background: transparent; padding: 0;">
+                    <button class="nav-tab active" data-tab="login">Login</button>
+                    <button class="nav-tab" data-tab="register">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login" class="auth-form">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">Email Address</label>
+                            <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Login to Account
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register" class="auth-form hidden">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="registerName">Full Name</label>
+                            <input type="text" id="registerName" class="form-control" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email Address</label>
+                            <input type="email" id="registerEmail" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" class="form-control" placeholder="Create a password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Create Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- EVENTS TAB -->
+        <div id="events" class="tab-content hidden">
+            <div class="card">
+                <h2>Available Events</h2>
+                <p>Browse and register for upcoming events</p>
+                <div id="events-list">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading events...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MY REGISTRATIONS TAB -->
+        <div id="my-registrations" class="tab-content hidden">
+            <div class="card">
+                <h2>My Registrations</h2>
+                <p>Your event registrations and QR codes</p>
+                <div id="registrations-list">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading your registrations...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN PANEL TAB -->
+<!-- ADMIN PANEL TAB -->
+<div id="admin" class="tab-content hidden">
+  <!-- Admin Login Section -->
+  <div id="admin-login">
+      <div class="card">
+          <h2>🔒 Admin Authentication</h2>
+          <p>Please login with admin credentials to access the admin panel.</p>
+          <form id="adminLoginForm" class="auth-form">
+              <div class="form-group">
+                  <label for="adminEmail">Admin Email</label>
+                  <input type="email" id="adminEmail" class="form-control" placeholder="admin@example.com" required>
+              </div>
+              <div class="form-group">
+                  <label for="adminPassword">Password</label>
+                  <input type="password" id="adminPassword" class="form-control" placeholder="Enter admin password" required>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%;">
+                  Login as Admin
+              </button>
+              <div style="text-align: center; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                  <p><strong>Demo Admin Credentials:</strong></p>
+                  <p>Email: <code>admin@example.com</code></p>
+                  <p>Password: <code>admin123</code></p>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <!-- Admin Panel (shown after login) -->
+  <div id="admin-panel" class="hidden">
+      <div class="card" style="margin-bottom: 1.5rem;">
+          <h2>👨‍💼 Admin Dashboard</h2>
+          <p>Welcome to the admin panel. Manage events, registrations, and QR verification.</p>
+      </div>
+
+    <!-- Admin Sub-navigation -->
+<div class="nav-tabs" style="margin-bottom: 2rem;">
+  <button type="button" class="nav-tab active" onclick="showAdminSection('qr-scanner', event)">📷 QR Scanner</button>
+  <button type="button" class="nav-tab" onclick="showAdminSection('all-registrations', event)">📋 All Registrations</button>
+  <button type="button" class="nav-tab" onclick="showAdminSection('create-event', event)">➕ Create Event</button>
+  <button type="button" class="btn btn-secondary" onclick="logout()" style="margin-left: auto;">🚪 Logout</button>
+</div>
+      <!-- QR Scanner Section -->
+      <div id="qr-scanner-section" class="admin-section">
+          <div class="card">
+              <h3>QR Code Scanner</h3>
+              <p>Scan QR codes to verify event registrations</p>
+              
+              <div class="scanner-container">
+                  <div class="scanner-overlay">
+                      <video id="qr-video" class="scanner-video" width="500" height="375"></video>
+                      <div class="scanner-frame"></div>
+                  </div>
+                  
+                  <div id="scanner-status" class="scanner-status scanner-inactive">
+                      🟡 Scanner Ready - Click "Start Scanner" to begin
+                  </div>
+                  
+                  <div class="scanner-controls">
+                      <button id="start-scanner" class="btn btn-success" onclick="startScanner()">
+                          🎥 Start Scanner
+                      </button>
+                      <button id="stop-scanner" class="btn btn-danger hidden" onclick="stopScanner()">
+                          ⏹️ Stop Scanner
+                      </button>
+                  </div>
+                  
+                  <div id="verification-result" class="result-container"></div>
+              </div>
+          </div>
+      </div>
+
+      <!-- All Registrations Section -->
+      <div id="all-registrations-section" class="admin-section hidden">
+          <div class="card">
+              <h3>All Registrations</h3>
+              <p>View and manage all event registrations</p>
+              <div class="section-actions">
+                  <button class="btn btn-secondary" onclick="loadAllRegistrations()">
+                      🔄 Refresh List
+                  </button>
+                  <span id="registrations-count" style="margin-left: 1rem; color: var(--gray);"></span>
+              </div>
+              <div id="all-registrations-list" style="margin-top: 1.5rem;">
+                  <div class="loading">
+                      <div class="loading-spinner"></div>
+                      <p>Loading registrations...</p>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Create Event Section -->
+      <div id="create-event-section" class="admin-section hidden">
+          <div class="card">
+              <h3>Create New Event</h3>
+              <p>Add a new event to the system</p>
+              
+              <form id="createEventForm" class="auth-form" style="max-width: 600px; margin: 0 auto;">
+                  <div class="form-group">
+                      <label for="eventTitle">Event Title *</label>
+                      <input type="text" id="eventTitle" class="form-control" placeholder="Enter event title" required>
+                  </div>
+                  
+                  <div class="form-group">
+                      <label for="eventDescription">Description</label>
+                      <textarea id="eventDescription" class="form-control" placeholder="Enter event description (optional)" rows="4"></textarea>
+                  </div>
+                  
+                  <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                      <div class="form-group">
+                          <label for="eventDate">Event Date & Time *</label>
+                          <input type="datetime-local" id="eventDate" class="form-control" required>
+                      </div>
+                      
+                      <div class="form-group">
+                          <label for="eventMaxAttendees">Maximum Attendees</label>
+                          <input type="number" id="eventMaxAttendees" class="form-control" placeholder="Unlimited" min="1">
+                      </div>
+                  </div>
+                  
+                  <div class="form-group">
+                      <label for="eventLocation">Location</label>
+                      <input type="text" id="eventLocation" class="form-control" placeholder="Enter event location (optional)">
+                  </div>
+                  
+                  <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                      <button type="submit" class="btn btn-primary" style="flex: 1;">
+                          🎉 Create Event
+                      </button>
+                      <button type="button" class="btn btn-secondary" onclick="clearEventForm()">
+                          🗑️ Clear Form
+                      </button>
+                  </div>
+              </form>
+              
+              <div id="create-event-result" style="margin-top: 1.5rem;"></div>
+          </div>
+      </div>
+  </div>
+</div>
+    </div>
+
+    <!-- Include jsQR library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>

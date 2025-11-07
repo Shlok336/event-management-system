@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Event Registration</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Admin Panel</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/events-page">Events</a>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </nav>
+        </header>
+
+        <div id="admin-login" class="page">
+            <h2>Admin Login Required</h2>
+            <p>Please login with admin credentials to access this panel.</p>
+            <form id="adminLoginForm">
+                <input type="email" id="adminEmail" placeholder="Admin Email" required>
+                <input type="password" id="adminPassword" placeholder="Password" required>
+                <button type="submit">Login as Admin</button>
+            </form>
+        </div>
+
+        <div id="admin-panel" class="hidden">
+            <nav class="admin-nav">
+                <button class="nav-btn active" onclick="showAdminPage('qr-scanner')">QR Scanner</button>
+                <button class="nav-btn" onclick="showAdminPage('all-registrations')">All Registrations</button>
+                <button class="nav-btn" onclick="showAdminPage('create-event')">Create Event</button>
+            </nav>
+
+            <!-- QR Scanner Page -->
+            <div id="qr-scanner-page" class="admin-page">
+                <h2>QR Code Scanner</h2>
+                <div class="scanner-section">
+                    <div id="scanner-container">
+                        <video id="qr-video" width="400" height="300"></video>
+                        <div class="scanner-controls">
+                            <button id="start-scanner" onclick="startScanner()" class="btn btn-primary">Start Scanner</button>
+                            <button id="stop-scanner" onclick="stopScanner()" class="btn btn-secondary hidden">Stop Scanner</button>
+                        </div>
+                    </div>
+                    <div id="verification-result" class="result-container"></div>
+                </div>
+            </div>
+
+            <!-- All Registrations Page -->
+            <div id="all-registrations-page" class="admin-page hidden">
+                <h2>All Registrations</h2>
+                <div class="registrations-header">
+                    <button onclick="loadAllRegistrations()" class="btn btn-secondary">Refresh</button>
+                </div>
+                <div id="all-registrations-list" class="registrations-list">
+                    <div class="loading">Loading registrations...</div>
+                </div>
+            </div>
+
+            <!-- Create Event Page -->
+            <div id="create-event-page" class="admin-page hidden">
+                <h2>Create New Event</h2>
+                <form id="createEventForm" class="event-form">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title *</label>
+                        <input type="text" id="eventTitle" placeholder="Enter event title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="eventDescription">Description</label>
+                        <textarea id="eventDescription" placeholder="Enter event description" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="eventDate">Event Date & Time *</label>
+                        <input type="datetime-local" id="eventDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="eventLocation">Location</label>
+                        <input type="text" id="eventLocation" placeholder="Enter event location">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="eventMaxAttendees">Maximum Attendees</label>
+                        <input type="number" id="eventMaxAttendees" placeholder="Leave empty for unlimited">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Create Event</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include jsQR library for QR scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <!-- Include your main JavaScript file -->
+    <script src="/static/script.js"></script>
+</body>
+</html>

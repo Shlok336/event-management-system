@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - Event Registration System</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Available Events</h1>
+            <nav class="public-nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/admin" class="nav-link">Admin Panel</a>
+                <span id="user-info" class="hidden">
+                    <span id="user-name"></span>
+                    <button onclick="logout()" class="btn btn-secondary btn-small">Logout</button>
+                </span>
+            </nav>
+        </header>
+
+        <div class="page">
+            <div class="page-header">
+                <h2>Upcoming Events</h2>
+                <p>Browse all available events. Login to register for events.</p>
+                
+                <div id="auth-status" class="auth-status">
+                    <div id="not-logged-in" class="auth-message">
+                        <p>🔒 <strong>Login required to register</strong> - <a href="/">Login here</a></p>
+                    </div>
+                    <div id="logged-in" class="auth-message hidden">
+                        <p>✅ <strong>You are logged in</strong> - You can register for events</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Events Filter/Search -->
+            <div class="events-controls">
+                <div class="search-box">
+                    <input type="text" id="eventSearch" placeholder="Search events..." onkeyup="filterEvents()">
+                </div>
+                <div class="events-count">
+                    <span id="events-count">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Events List -->
+            <div id="events-list" class="events-container">
+                <div class="loading">Loading events...</div>
+            </div>
+
+            <!-- No Events Message -->
+            <div id="no-events" class="hidden">
+                <div class="no-data">
+                    <h3>No Events Available</h3>
+                    <p>There are no upcoming events at the moment. Please check back later.</p>
+                </div>
+            </div>
+
+            <!-- Login Prompt -->
+            <div id="login-prompt" class="login-prompt hidden">
+                <div class="prompt-content">
+                    <h3>Login Required</h3>
+                    <p>You need to be logged in to register for events.</p>
+                    <div class="prompt-actions">
+                        <a href="/" class="btn btn-primary">Go to Login</a>
+                        <a href="/" class="btn btn-secondary">Create Account</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Details Modal -->
+        <div id="event-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeEventModal()">&times;</span>
+                <div id="modal-content">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Additional events page specific functionality
+        let allEvents = [];
+        let currentToken = localStorage.getItem('authToken');
+
+        // Check authentication status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            loadEvents();
+        });
+
+        function checkAuthStatus() {
+            if (currentToken) {
+                document.getElementById('not-logged-in').classList.add('hidden');
+                document.getElementById('logged-in').classList.remove('hidden');
+                document.getElementById('user-info').classList.remove('hidden');
+                // You could fetch and display user name here
+            } else {
+                document.getElementById('not-logged-in').classList.remove('hidden');
+                document.getElementById('logged-in').classList.add('hidden');
+                document.getElementById('user-info').classList.add('hidden');
+            }
+        }
+
+        async function loadEvents() {
+            try {
+                const response = await fetch(`${API_BASE}/events`);
+                const events = await response.json();
+                allEvents = events;
+                
+                const eventsList = document.getElementById('events-list');
+                const noEvents = document.getElementById('no-events');
+                
+                if (events.length === 0) {
+                    eventsList.classList.add('hidden');
+                    noEvents.classList.remove('hidden');
+                    document.getElementById('events-count').textContent = 'No events found';
+                    return;
+                }
+                
+                noEvents.classList.add('hidden');
+                eventsList.classList.remove('hidden');
+                eventsList.innerHTML = '';
+                
+                document.getElementById('events-count').textContent = `${events.length} event(s) found`;
+                
+                events.forEach(event => {
+                    const eventCard = createEventCard(event);
+                    eventsList.appendChild(eventCard);
+                });
+                
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('events-list').innerHTML = 
+                    '<div class="error-message"><p>Error loading events. Please try again later.</p></div>';
+            }
+        }
+
+        function createEventCard(event) {
+            const eventCard = document.createElement('div');
+            eventCard.className = 'event-card';
+            eventCard.innerHTML = `
+                <div class="event-header">
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-date-badge">
+                        ${new Date(event.date).toLocaleDateString()}
+                    </div>
+                </div>
+                
+                <div class="event-description">
+                    ${event.description || 'No description available for this event.'}
+                </div>
+                
+                <div class="event-details-grid">
+                    <div class="detail-item">
+                        <span class="detail-icon">📅</span>
+                        <span class="detail-text">${new Date(event.date).toLocaleString()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📍</span>
+                        <span class="detail-text">${event.location || 'Location TBA'}</span>
+                    </div>
+                    ${event.max_attendees ? `
+                    <div class="detail-item">
+                        <span class="detail-icon">👥</span>
+                        <span class="detail-text">Max: ${event.max_attendees} attendees</span>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="event-actions">
+                    <button class="btn btn-outline" onclick="viewEventDetails(${event.id})">
+                        View Details
+                    </button>
+                    <button class="btn btn-primary register-btn" 
+                            onclick="registerForEvent(${event.id})" 
+                            ${!currentToken ? 'disabled' : ''}>
+                        ${!currentToken ? 'Login to Register' : 'Register Now'}
+                    </button>
+                </div>
+            `;
+            return eventCard;
+        }
+
+        function viewEventDetails(eventId) {
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) return;
+            
+            const modal = document.getElementById('event-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>${event.title}</h2>
+                <div class="event-meta">
+                    <p><strong>Date & Time:</strong> ${new Date(event.date).toLocaleString()}</p>
+                    <p><strong>Location:</strong> ${event.location || 'To be announced'}</p>
+                    ${event.max_attendees ? `<p><strong>Maximum Attendees:</strong> ${event.max_attendees}</p>` : ''}
+                </div>
+                <div class="event-description-full">
+                    <h3>Description</h3>
+                    <p>${event.description || 'No detailed description available for this event.'}</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" onclick="registerForEvent(${event.id}); closeEventModal();">
+                        Register for this Event
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeEventModal()">
+                        Close
+                    </button>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+        }
+
+        function filterEvents() {
+            const searchTerm = document.getElementById('eventSearch').value.toLowerCase();
+            const events = document.querySelectorAll('.event-card');
+            let visibleCount = 0;
+            
+            events.forEach(event => {
+                const title = event.querySelector('.event-title').textContent.toLowerCase();
+                const description = event.querySelector('.event-description').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    event.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    event.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('events-count').textContent = `${visibleCount} event(s) found`;
+            
+            // Show/hide no results message
+            const noEvents = document.getElementById('no-events');
+            if (visibleCount === 0 && searchTerm) {
+                noEvents.classList.remove('hidden');
+                noEvents.innerHTML = `
+                    <div class="no-data">
+                        <h3>No Matching Events</h3>
+                        <p>No events found matching "${searchTerm}". Try a different search term.</p>
+                    </div>
+                `;
+            } else if (visibleCount === 0) {
+                noEvents.classList.remove('hidden');
+            } else {
+                noEvents.classList.add('hidden');
+            }
+        }
+
+        // Override the register function for events page
+        const originalRegisterForEvent = window.registerForEvent;
+        window.registerForEvent = async function(eventId) {
+            if (!currentToken) {
+                document.getElementById('login-prompt').classList.remove('hidden');
+                return;
+            }
+            
+            await originalRegisterForEvent(eventId);
+        }
+
+        // Close login prompt
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'login-prompt') {
+                e.target.classList.add('hidden');
+            }
+        });
+
+        // Make functions available globally
+        window.viewEventDetails = viewEventDetails;
+        window.closeEventModal = closeEventModal;
+        window.filterEvents = filterEvents;
+    </script>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
